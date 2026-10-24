@@ -241,6 +241,9 @@
       const [showPericiaModal, setShowPericiaModal] = useState(false);
       const [newPericia, setNewPericia] = useState({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' });
 
+      const [editingPericiaId, setEditingPericiaId] = useState(null);
+      const [editingAtaqueId, setEditingAtaqueId] = useState(null);
+
       const [showAtaqueModal, setShowAtaqueModal] = useState(false);
       const [newAtaque, setNewAtaque] = useState({
         nome: '', teste: '2d20+5', danoFormula: '1d6+2', critico: '20/x2', alcance: 'Curto', tipo: 'Perfuração', especial: ''
@@ -437,15 +440,26 @@
       const addPericia = () => {
         if (!newPericia.nome) return;
         const pToAdd = {
-          id: 'p_' + Date.now(),
+          id: editingPericiaId || ('p_' + Date.now()),
           nome: newPericia.nome,
           atributo: newPericia.atributo,
           bonus: parseInt(newPericia.bonus, 10) || 0,
           treinamento: newPericia.treinamento
         };
-        setCharacter(prev => ({ ...prev, pericias: [...prev.pericias, pToAdd] }));
+        if (editingPericiaId) {
+          setCharacter(prev => ({ ...prev, pericias: prev.pericias.map(p => p.id === editingPericiaId ? pToAdd : p) }));
+        } else {
+          setCharacter(prev => ({ ...prev, pericias: [...prev.pericias, pToAdd] }));
+        }
+        setEditingPericiaId(null);
         setShowPericiaModal(false);
         setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' });
+      };
+
+      const startEditPericia = (p) => {
+        setNewPericia({ nome: p.nome, atributo: p.atributo, bonus: p.bonus, treinamento: p.treinamento });
+        setEditingPericiaId(p.id);
+        setShowPericiaModal(true);
       };
 
       const removePericia = (id) => {
@@ -454,10 +468,21 @@
 
       const addAtaque = () => {
         if (!newAtaque.nome) return;
-        const atkToAdd = { ...newAtaque, id: 'atk_' + Date.now() };
-        setCharacter(prev => ({ ...prev, ataques: [...prev.ataques, atkToAdd] }));
+        const atkToAdd = { ...newAtaque, id: editingAtaqueId || ('atk_' + Date.now()) };
+        if (editingAtaqueId) {
+          setCharacter(prev => ({ ...prev, ataques: prev.ataques.map(a => a.id === editingAtaqueId ? atkToAdd : a) }));
+        } else {
+          setCharacter(prev => ({ ...prev, ataques: [...prev.ataques, atkToAdd] }));
+        }
+        setEditingAtaqueId(null);
         setShowAtaqueModal(false);
         setNewAtaque({ nome: '', teste: '2d20+5', danoFormula: '1d6+2', critico: '20/x2', alcance: 'Curto', tipo: 'Perfuração', especial: '' });
+      };
+
+      const startEditAtaque = (atk) => {
+        setNewAtaque({ nome: atk.nome, teste: atk.teste, danoFormula: atk.danoFormula, critico: atk.critico, alcance: atk.alcance, tipo: atk.tipo, especial: atk.especial || '' });
+        setEditingAtaqueId(atk.id);
+        setShowAtaqueModal(true);
       };
 
       const removeAtaque = (id) => {
@@ -896,7 +921,7 @@
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-bold text-neutral-300 uppercase tracking-wider">Ataques Cadastrados</h3>
                       <button
-                        onClick={() => setShowAtaqueModal(true)}
+                        onClick={() => { setEditingAtaqueId(null); setNewAtaque({ nome: '', teste: '2d20+5', danoFormula: '1d6+2', critico: '20/x2', alcance: 'Curto', tipo: 'Perfuração', especial: '' }); setShowAtaqueModal(true); }}
                         className="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-xs rounded border border-red-800/60 transition flex items-center gap-1"
                       >
                         <Icon name="plus" className="w-3.5 h-3.5" /> Novo Ataque
@@ -921,13 +946,22 @@
                                   Alcance: <span className="text-neutral-300">{atk.alcance}</span> | Crítico: <span className="text-neutral-300">{atk.critico}</span>
                                 </p>
                               </div>
-                              <button
-                                onClick={() => removeAtaque(atk.id)}
-                                className="text-neutral-600 hover:text-red-400 transition"
-                                title="Remover Ataque"
-                              >
-                                <Icon name="trash-2" className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => startEditAtaque(atk)}
+                                  className="text-neutral-600 hover:text-amber-400 transition"
+                                  title="Editar Ataque"
+                                >
+                                  <Icon name="pencil" className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => removeAtaque(atk.id)}
+                                  className="text-neutral-600 hover:text-red-400 transition"
+                                  title="Remover Ataque"
+                                >
+                                  <Icon name="trash-2" className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
 
                             {atk.especial && (
@@ -972,7 +1006,7 @@
                         />
                       </div>
                       <button
-                        onClick={() => setShowPericiaModal(true)}
+                        onClick={() => { setEditingPericiaId(null); setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' }); setShowPericiaModal(true); }}
                         className="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-xs rounded border border-red-800/60 transition flex items-center gap-1"
                       >
                         <Icon name="plus" className="w-3.5 h-3.5" /> Adicionar Perícia
@@ -1009,6 +1043,13 @@
                                 >
                                   <D20Icon className="w-3 h-3 text-red-500" />
                                   {attrVal}d20+{p.bonus}
+                                </button>
+                                <button
+                                  onClick={() => startEditPericia(p)}
+                                  className="text-neutral-700 hover:text-amber-400 transition"
+                                  title="Editar"
+                                >
+                                  <Icon name="pencil" className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => removePericia(p.id)}
@@ -1294,7 +1335,7 @@
           {showPericiaModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
-                <h3 className="font-bold text-neutral-100 text-sm">Adicionar Nova Perícia</h3>
+                <h3 className="font-bold text-neutral-100 text-sm">{editingPericiaId ? 'Editar Perícia' : 'Adicionar Nova Perícia'}</h3>
                 <div className="space-y-3 text-xs">
                   <div>
                     <label className="text-neutral-400 block mb-1">Nome da Perícia:</label>
@@ -1345,7 +1386,7 @@
                 </div>
                 <div className="flex justify-end gap-2 text-xs pt-2">
                   <button
-                    onClick={() => setShowPericiaModal(false)}
+                    onClick={() => { setShowPericiaModal(false); setEditingPericiaId(null); }}
                     className="px-3 py-1.5 bg-neutral-800 text-neutral-300 rounded hover:bg-neutral-700"
                   >
                     Cancelar
@@ -1354,7 +1395,7 @@
                     onClick={addPericia}
                     className="px-3 py-1.5 bg-red-950 text-red-200 border border-red-800 rounded hover:bg-red-900"
                   >
-                    Adicionar
+                    {editingPericiaId ? 'Salvar' : 'Adicionar'}
                   </button>
                 </div>
               </div>
@@ -1364,7 +1405,7 @@
           {showAtaqueModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 max-w-md w-full space-y-4 shadow-2xl">
-                <h3 className="font-bold text-neutral-100 text-sm">Cadastrar Novo Ataque</h3>
+                <h3 className="font-bold text-neutral-100 text-sm">{editingAtaqueId ? 'Editar Ataque' : 'Cadastrar Novo Ataque'}</h3>
                 <div className="space-y-3 text-xs">
                   <div>
                     <label className="text-neutral-400 block mb-1">Nome do Ataque/Arma/Ritual:</label>
@@ -1447,7 +1488,7 @@
 
                 <div className="flex justify-end gap-2 text-xs pt-2">
                   <button
-                    onClick={() => setShowAtaqueModal(false)}
+                    onClick={() => { setShowAtaqueModal(false); setEditingAtaqueId(null); }}
                     className="px-3 py-1.5 bg-neutral-800 text-neutral-300 rounded hover:bg-neutral-700"
                   >
                     Cancelar
@@ -1456,7 +1497,7 @@
                     onClick={addAtaque}
                     className="px-3 py-1.5 bg-red-950 text-red-200 border border-red-800 rounded hover:bg-red-900"
                   >
-                    Adicionar
+                    {editingAtaqueId ? 'Salvar' : 'Adicionar'}
                   </button>
                 </div>
               </div>
