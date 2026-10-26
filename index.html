@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CRIS PARANORMAL - Ficha de Personagem</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7f1d1d" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-512x512.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Ficha RPG" />
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -45,6 +54,9 @@
 </head>
 <body class="bg-neutral-950 text-neutral-100 font-sans selection:bg-red-900 selection:text-white">
   <div id="root"></div>
+
+  <!-- Registro do Service Worker -->
+  <script src="script.js"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
@@ -134,12 +146,12 @@
     // --- INITIAL DEFAULT CHARACTER STATE ---
     const initialCharacterData = {
       profile: {
-        nome: "Ottavio 'Sombra' Silva",
-        jogador: "Alex",
-        grauFixer: "Grau 2",
-        peRodada: 3,
-        defesa: 16,
-        esquiva: 21,
+        nome: "Mega la eles",
+        jogador: "la ele man",
+        grauFixer: "Grau 9",
+        peRodada: 1,
+        defesa: 1,
+        esquiva: 1,
         protecao: "Colete Leve (2 Def / 2 RD)",
         avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600"
       },
@@ -209,7 +221,7 @@
       const [newBar, setNewBar] = useState({ nome: 'Nova Barra', atual: 20, max: 20, cor: '#3b82f6' });
 
       const [showPericiaModal, setShowPericiaModal] = useState(false);
-      const [newPericia, setNewPericia] = useState({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Destreinado' });
+      const [newPericia, setNewPericia] = useState({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' });
 
       const [editingPericiaId, setEditingPericiaId] = useState(null);
       const [editingAtaqueId, setEditingAtaqueId] = useState(null);
@@ -423,7 +435,7 @@
         }
         setEditingPericiaId(null);
         setShowPericiaModal(false);
-        setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Destreinado' });
+        setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' });
       };
 
       const startEditPericia = (p) => {
@@ -976,7 +988,7 @@
                         />
                       </div>
                       <button
-                        onClick={() => { setEditingPericiaId(null); setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Destreinado' }); setShowPericiaModal(true); }}
+                        onClick={() => { setEditingPericiaId(null); setNewPericia({ nome: '', atributo: 'INT', bonus: 0, treinamento: 'Treinado' }); setShowPericiaModal(true); }}
                         className="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-xs rounded border border-red-800/60 transition flex items-center gap-1"
                       >
                         <Icon name="plus" className="w-3.5 h-3.5" /> Adicionar Perícia
@@ -1348,8 +1360,8 @@
                       className="w-full bg-neutral-950 border border-neutral-800 rounded p-2 text-neutral-200 focus:outline-none focus:border-red-500"
                     >
                       <option value="Destreinado">Destreinado</option>
-                      <option value="Destreinado">Destreinado (+5)</option>
-                      <option value="Destreinado">Destreinado (+10)</option>
+                      <option value="Treinado">Treinado (+5)</option>
+                      <option value="Veterano">Veterano (+10)</option>
                       <option value="Expert">Expert (+15)</option>
                     </select>
                   </div>
